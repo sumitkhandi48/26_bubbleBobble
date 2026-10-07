@@ -4,6 +4,7 @@ import pygame
 WIDTH, HEIGHT = 800, 600
 GRAVITY, JUMP_SPEED, WALK_SPEED = 1500, -640, 220
 BUBBLE_TRAVEL, BUBBLE_LIFE = 0.45, 8.0
+SPARKLES = []
 PLATFORMS = [
     pygame.Rect(0, 570, WIDTH, 30),
     pygame.Rect(0, 450, 300, 16),
@@ -31,7 +32,7 @@ def bubble_tint(bubble):
 
 def on_fruit_collected(fruit):
     """Called when the player picks up a fruit; add a sound, sparkle, or bonus effect here."""
-    pass
+    SPARKLES.append((fruit.center.copy(), pygame.time.get_ticks()))
 
 
 def bonus_life_threshold():
@@ -231,6 +232,16 @@ class Game:
             pygame.draw.rect(screen, (150, 120, 220), (plat.left, plat.top, plat.width, 4))
         for fruit in self.fruits:
             pygame.draw.circle(screen, (230, 60, 80), fruit.center, 9)
+        for pos, created in SPARKLES[:]:
+            age = pygame.time.get_ticks() - created
+
+            if age >= 300:
+                SPARKLES.remove((pos, created))
+                continue
+
+            radius = 6 + age // 20
+            pygame.draw.line(screen, (255, 255, 120), pos - (radius, 0), pos + (radius, 0), 2)
+            pygame.draw.line(screen, (255, 255, 120), pos - (0, radius), pos + (0, radius), 2)
         for enemy in self.enemies:
             color = (240, 90, 60) if enemy.speed > 100 else (240, 160, 50)
             pygame.draw.rect(screen, color, enemy.rect, border_radius=6)
